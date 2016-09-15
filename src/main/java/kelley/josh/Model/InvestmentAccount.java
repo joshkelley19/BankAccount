@@ -5,10 +5,11 @@ package kelley.josh.Model;
  */
 public class InvestmentAccount extends Account{
     final AccountType accountType=AccountType.INVESTMENT;
+    final OverdraftProtection overdraftProtection = OverdraftProtection.ENABLED;
     final Double interestRate=new Double(2.5);
 
-    public InvestmentAccount(Integer acctNum, Double initialDeposit, OverdraftProtection odType){
-        this.accountNumber=acctNum;this.accountBalance=initialDeposit;this.overdraftProtection=odType;
+    public InvestmentAccount(Integer acctNum, Double initialDeposit){
+        this.accountNumber=acctNum;this.accountBalance=initialDeposit;
     }
 
     @Override

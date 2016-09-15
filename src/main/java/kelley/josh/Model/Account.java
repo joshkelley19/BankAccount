@@ -1,27 +1,26 @@
 package kelley.josh.Model;
 
 import java.util.ArrayList;
-import kelley.josh.Model.Profile;
-/**
- * Created by joshuakelley on 9/13/16.
- */
+
 public class Account{
-    enum AccountType{
+    public enum AccountType{
         CHECKING, SAVINGS, INVESTMENT, CREDIT;
     }
-    enum AccountStatus{
+    public enum AccountStatus{
         OPEN, CLOSED, FROZEN;
     }
-    enum OverdraftProtection{
+    public enum OverdraftProtection{
         ENABLED, DISABLED, AUTOMATIC
     }
+
     AccountType accountType;
-    OverdraftProtection overdraftProtection;
-    AccountStatus accountStatus=AccountStatus.OPEN;
-    int accountNumber;
-    Double accountBalance = new Double(0);
-    Double interestRate = new Double(0);
-    ArrayList<Transaction> transactions = new ArrayList<Transaction>();
+    public OverdraftProtection overdraftProtection;
+    public AccountStatus accountStatus=AccountStatus.OPEN;
+    public Account transferAccount = null;
+    public int accountNumber;
+    public Double accountBalance;
+    public Double interestRate = new Double(0);
+    public ArrayList<Transaction> transactions = new ArrayList<Transaction>();
 
 //    public Account(AccountType acctType,Integer acctNum, Double intRate, Double initialDeposit, OverdraftProtection odType){
 //        this.accountType=acctType;this.accountNumber=acctNum;this.interestRate=intRate;this.accountBalance=initialDeposit;this.overdraftProtection=odType;
@@ -42,9 +41,9 @@ public class Account{
         boolean success;
         String confirm;
         double moneyAfter=accountBalance-money;
-        switch (overdraftProtection){
-            case DISABLED:success=(accountBalance>0)?true:false;
-            case ENABLED:success=((moneyAfter)>0)?true:false;
+        switch (this.overdraftProtection){
+            case DISABLED:success=(accountBalance>=0)?true:false;break;
+            case ENABLED:success=((moneyAfter)>=0)?true:false;break;
             default:success=false;
         }
         confirm=(success)?"Success":"Failure";
@@ -57,8 +56,18 @@ public class Account{
         }else return false;
     }
 
-    public void viewBalance() {
+    public boolean transferTo(Account receivingAccount, Double money){
+        if(accountBalance>=money){
+            withdraw(money);
+            receivingAccount.deposit(money);
+            return true;
+        }else return false;
+
+    }
+
+    public double viewBalance() {
         System.out.println(accountBalance);
+        return accountBalance;
     }
 
     public Account closeAccount(int answer) {

@@ -18,13 +18,16 @@ public class Profile {
         createAccount();
         mainMenu();
     }
+
     public boolean mainMenu(){
         System.out.println(("Welcome "+firstName+"!\n\n"));
         System.out.print("Enter 1 to Choose an account; Enter 2 to Create New Account;Enter 3 to Transfer Funds; Enter 4 to Sign Out: ");
         switch (getInt()){
             case 1:printAccounts();
                 currentAccount= selectAccount(getInt());
-                while (currentAccount!=null)manageAccount();
+                while (currentAccount!=null){
+                    manageAccount();
+                }
                 break;
             case 2:currentAccount=createAccount();break;
             case 3:transfer();break;
@@ -33,11 +36,11 @@ public class Profile {
         }
         return true;
     }
+
     protected boolean signOut(){
         return false;
     }
 
-    //manageAccount(deposit(selectAccount)
     public void printAccounts(){
         int index=1;
         for (Account a: accounts){
@@ -64,20 +67,21 @@ public class Profile {
                 if(access&&(currentAccount.overdraftProtection!= Account.OverdraftProtection.AUTOMATIC)){
                 currentAccount.withdraw(dough);
             }else if((currentAccount.accountBalance-dough)<0){
-                transferToPersonal();
+                currentAccount.transferTo(currentAccount.transferAccount,dough);
             }break;
             case 3:if(open)currentAccount.viewBalance();break;
-            case 4:if(open) {
+            case 4:transfer();break;
+            case 5:if(open) {
                 System.out.println("Are you sure you want to close your account?\nEnter 1 to Confirm; Enter Any Number to Cancel");
                 accounts.remove(currentAccount.closeAccount(getInt()));
             }break;
-            case 5:cancel();currentAccount=null;break;
+            case 6:cancel();currentAccount=null;break;
             default:defaultOption();
         }
     }
 
     public void printOptions(){
-        System.out.println("Enter 1 to Deposit; Enter 2 to Withdraw; Enter 3 to View Balance; Enter 4 to Close your Account; Enter 5 to Exit");
+        System.out.println("Enter 1 to Deposit; Enter 2 to Withdraw; Enter 3 to View Balance; Enter 4 to Transfer Money; Enter 5 to Close your Account; Enter 6 to Exit");
     }
 
     public Account createAccount(){
@@ -85,14 +89,27 @@ public class Profile {
         Account createdAccount;
         switch (getInt()){
             case 1:createdAccount=new CheckingAccount(setAccountNumber(),getMoney(),setOverdraftProtectionType());break;
-            case 2:createdAccount= new SavingsAccount(setAccountNumber(),getMoney(),setOverdraftProtectionType());break;
-            case 3:createdAccount= new InvestmentAccount(setAccountNumber(),getMoney(), setOverdraftProtectionType());break;
+            case 2:createdAccount= new SavingsAccount(setAccountNumber(),getMoney(),setOverdraftProtectionType());if (createdAccount.overdraftProtection== Account.OverdraftProtection.AUTOMATIC){
+                setOverdraftProtectionAccount(createdAccount);
+            }break;
+            case 3:createdAccount= new InvestmentAccount(setAccountNumber(),getMoney());break;
             case 4:cancel();return null;
             default:defaultOption();return null;
         }
         createdAccount.transactions.add(new Transaction(createdAccount.accountType, Transaction.TransactionType.CLOSEACCOUNT,true,true));
         accounts.add(createdAccount);
         return createdAccount;
+    }
+
+    public void setOverdraftProtectionAccount(Account accountSettingOverdraft){
+        if(!accounts.isEmpty()) {
+            printAccounts();
+            System.out.println("Which account would you like to automatically draw from?");
+            accountSettingOverdraft.transferAccount = selectAccount(getInt());
+        }else{
+            System.out.println("No accounts to draw from. Overdraft Protection set to Disabled");
+            accountSettingOverdraft.overdraftProtection= Account.OverdraftProtection.DISABLED;
+        }
     }
 
     public void transfer() {
@@ -107,13 +124,13 @@ public class Profile {
 
     public boolean transferToPersonal(){
         printAccounts();
-        System.out.println("Which account would you like to transfer from?\nEnter Number: ");
-        Account from = selectAccount(getInt());
         System.out.println("Which account would you like to transfer to?\nEnter Number: ");
         Account to = selectAccount(getInt());
-        System.out.println("How Much? Enter Amount: ");
+        printAccounts();
+        System.out.println("Which account would you like to transfer from?\nEnter Number: ");
+        Account from = selectAccount(getInt());
         Double money=getMoney();
-        return completeTransfer(from, to, money);
+        return from.transferTo(to, money);
     }
 
     public void transferToOutside(){
@@ -125,7 +142,14 @@ public class Profile {
         //search profile arraylist for userName, acct num
         //create random acct num, not same as other acct nums, acct nums<> saved in controller
     }
-
+    //    public Account getOutsideTransferAccount(){
+//        for (Profile profileReceivingTransfer: profiles){
+//            if((!accountReceivingTransfer.equals(currentAccount))&&accountReceivingTransfer.accountBalance>=money){
+//                return accountReceivingTransfer;
+//            }
+//        }
+//        return null;
+//    }
     public boolean completeTransfer(Account moneyFrom, Account moneyTo, Double money){
 
         if (moneyFrom.withdraw(money)&&moneyTo.deposit(money))return true;
